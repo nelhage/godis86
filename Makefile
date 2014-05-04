@@ -8,7 +8,15 @@ OBJECTS = \
 	libudis86/syn-att.o \
 	libudis86/udis86.o \
 
-libudis86.a: $(OBJECTS)
+GEN := udis86/libudis86.a udis86/mnemonics.go
+
+gobuild: $(GEN) FORCE
+	go build github.com/nelhage/godis86/udis86
+
+test: $(GEN) FORCE
+	go test github.com/nelhage/godis86/udis86
+
+udis86/libudis86.a: $(OBJECTS)
 	$(AR) rc $@ $^
 
 PYTHON  = python
@@ -19,5 +27,12 @@ libudis86/itab.c libudis86/itab.h: $(OPTABLE) \
                scripts/ud_opcode.py
 	$(PYTHON) scripts/ud_itab.py $(OPTABLE) libudis86
 
+udis86/mnemonics.go: $(OPTABLE) \
+               scripts/ud_mnemonic.py \
+               scripts/ud_opcode.py
+	$(PYTHON) scripts/ud_mnemonic.py $(OPTABLE) udis86
+
 clean:
 	rm -f $(OBJECTS) libudis86.a
+
+.PHONY: FORCE

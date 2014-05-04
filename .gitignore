@@ -1,3 +1,7 @@
 libudis86.a
 *.o
 *.pyc
+libudis86/itab.h
+libudis86/itab.c
+udis86/mnemonics.go
+*.test
