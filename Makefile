@@ -8,7 +8,9 @@ OBJECTS = \
 	libudis86/syn-att.o \
 	libudis86/udis86.o \
 
-GEN := udis86/libudis86.a udis86/mnemonics.go
+GEN := libudis86.a udis86/mnemonics.go
+export CGO_CFLAGS=-I$(CURDIR)
+export CGO_LDFLAGS=-L$(CURDIR) -ludis86
 
 gobuild: $(GEN) FORCE
 	go build github.com/nelhage/godis86/udis86
@@ -16,7 +18,7 @@ gobuild: $(GEN) FORCE
 test: $(GEN) FORCE
 	go test github.com/nelhage/godis86/udis86
 
-udis86/libudis86.a: $(OBJECTS)
+libudis86.a: $(OBJECTS)
 	$(AR) rc $@ $^
 
 PYTHON  = python

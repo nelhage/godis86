@@ -1,7 +1,5 @@
 package udis86
 
-//#cgo CFLAGS: -I..
-//#cgo LDFLAGS: libudis86.a
 //#include "udis86.h"
 //#include "string.h"
 import "C"
