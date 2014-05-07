@@ -91,6 +91,10 @@ func (d *Disassembler) Next() bool {
 	return C.ud_disassemble(&d.u) != 0
 }
 
+func (d *Disassembler) PC() uint64 {
+	return uint64(C.ud_insn_off(&d.u))
+}
+
 func (d *Disassembler) Len() int {
 	return int(C.ud_insn_len(&d.u))
 }
