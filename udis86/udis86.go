@@ -10,37 +10,65 @@ import (
 	"unsafe"
 )
 
-// a Dissassembler encapsulates a single instance of the
+// A Disassembler encapsulates a single instance of the
 // disassembler. Multiple Disassemblers may be created and operated on
-// in parallel.
+// independently. A given Disassembler should only be used by one
+// goroutine at once.
 type Disassembler struct {
 	u     C.struct_ud
 	bytes []byte
 	r     io.Reader
 }
 
+// Vendor describes which vendor's extensions should be decoded. This
+// matters primarily for the VMX/SVM virtualization extensions.
 type Vendor int
 
 const (
-	VendorAny   Vendor = C.UD_VENDOR_ANY
+	// VendorAny means "decode extensions from either vendor"
+	VendorAny Vendor = C.UD_VENDOR_ANY
+	// VendorIntel means "only decode extensions recognized by Intel CPUs"
 	VendorIntel Vendor = C.UD_VENDOR_INTEL
-	VendorAMD   Vendor = C.UD_VENDOR_AMD
+	// VendorAMD means "only decode extensions recognized by AMD CPUs"
+	VendorAMD Vendor = C.UD_VENDOR_AMD
 )
 
+// Syntax describes how to render the disassembled instructions to a
+// textual format.
 type Syntax int
 
 const (
+	// SyntaxNone means do not produce a string version
 	SyntaxNone Syntax = iota
+	// SyntaxIntel uses Intel syntax (e.g. no % prefixes,
+	// [base+scale*off] syntax)
 	SyntaxIntel
+	// SyntaxATT uses AT&T assembler syntax. %- prefixes on
+	// register, (%base,%index,scale) addressing, etc.
 	SyntaxATT
 )
 
+// Config defines how to create a new Diasassembler. At a minimum,
+// exactly one of Buf and Reader must be populated to define where to
+// take input from. All other fields will be populated with defaults
+// by udis86.
 type Config struct {
-	Buf    []byte
+	// Buf defines a byte slice to read assembly from.
+	Buf []byte
+	// Reader defines an io.Reader to read input from. godis86
+	// always performs one-byte reads, so expensive Readers should
+	// be wrapped in a bufio.Reader if possible.
 	Reader io.Reader
-	Bits   byte
-	PC     uint64
+	// Bits defines the disassembly mode -- 16-, 32-, or 64-bit.
+	Bits byte
+	// PC specifies the instruction pointer value (%ip/%eip/%rip)
+	// of the start of the input. This affects rendering of
+	// relative offsets.
+	PC uint64
+	// Vendor determines which vendor's extensions to accept
 	Vendor Vendor
+	// Syntax determines the syntax of output returned by
+	// String().
 	Syntax Syntax
 }
 
